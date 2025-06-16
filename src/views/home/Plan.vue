@@ -32,14 +32,14 @@ const handleBtn = () => {
 
 <template>
   <div class="about">
-    <CustomHeader title="首页" />
+    <CustomHeader title="招生计划" />
     <div class="wrapper">
       <div class="list flex-center py-8 flex-column" style="margin-top: 50px;">
         <span class="logo">
           <van-image width="150" :src="logo" />
         </span>
         <span class="logo fs-1 py-3 opacity-75" style="color:Green">OxalisMajor</span>
-        <span class="fs-6 py-3 opacity-75" style="color:Green">你的幸运志愿导航</span>
+        <span class="fs-6 py-3 opacity-75" style="color:Green">等待最新招生计划更新后，开放使用</span>
       </div>
     </div>
   </div>
