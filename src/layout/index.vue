@@ -17,21 +17,21 @@ const useTabBar = () => {
         to: {
           name: "Major",
         },
-        icon: "user-o",
+        icon: "apps-o",
       },
       {
         title: "招生",
         to: {
           name: "Plan",
         },
-        icon: "user-o",
+        icon: "label-o",
       },
       {
         title: "关于",
         to: {
           name: "About",
         },
-        icon: "user-o",
+        icon: "gift-o",
       },
     ],
   });

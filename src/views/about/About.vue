@@ -39,12 +39,12 @@
 					<van-image width="150" :src="logo" />
 				</span>
 				<span class="logo fs-1 py-3 opacity-75" style="color:Green">OxalisMajor</span>
-				<span class="fs-6 py-3 opacity-75">
+				<span class="fs-6 py-3 opacity-75" style="color:Green">
 					项目地址：
 					<a href="https://github.com/talktao/Vue3-Vite-Vant-TS-H5">https://github.com/arxb233/OxalisMajor</a>
 				</span>
-				<span class="fs-3 py-3 opacity-75">项目作者：Baris</span>
-				<span class="fs-3 py-3 opacity-75">
+				<span class="fs-3 py-3 opacity-75" style="color:Green" >项目作者：Baris</span>
+				<span class="fs-3 py-3 opacity-75" style="color:Green" >
 					{{ userName }}
 					<van-button v-if="userName == ''" color="#f50" size="small" @click="handleBtn">点我有魔法~</van-button>
 				</span>
