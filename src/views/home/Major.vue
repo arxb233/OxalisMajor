@@ -2,6 +2,7 @@
 import { ref, reactive, toRefs, onMounted } from 'vue'
 import logo from '@/assets/logo.png'
 import { GetSchool, GetLogoUrl } from '@/api/Major'
+import { watch } from 'vue'
 
 const logoList = ref([]);
 // 搜索相关
@@ -37,7 +38,7 @@ const visibleList = ref<any[]>([])     // 当前显示数据
 const loading = ref(false)
 const finished = ref(false)
 const chunkSize = 10                   // 每次加载条数
-let fullData: any[] = []               // 全部数据缓存
+const fullData = ref([])               // 全部数据缓存
 const handleTab = () => {
 }
 const getList = async () => {
@@ -45,10 +46,10 @@ const getList = async () => {
     try {
         const res = await GetSchool(yearValue.value, subjectValue.value)
         console.log(res.data.message)
-        fullData = res.data.message || []
-        cardData.value = fullData
-        visibleList.value = fullData.slice(0, chunkSize)
-        finished.value = visibleList.value.length >= fullData.length
+        fullData.value = res.data.message || []
+        cardData.value = fullData.value
+        visibleList.value = fullData.value.slice(0, chunkSize)
+        finished.value = visibleList.value.length >= fullData.value.length
         await GetLogo();
     } catch (err) {
         console.error('获取数据失败', err)
@@ -56,22 +57,26 @@ const getList = async () => {
         loading.value = false
     }
 }
-const GetLogo = async() => {
-    const promises = visibleList.value.map(item =>
-        GetLogoUrl(item.学校).then(res => ({
-            name: item.学校,
-            url: res.data.issuccess ? res.data.message : null
-        }))
-    );
-    const results = await Promise.all(promises);
-    logoList.value = results;
+const GetLogo = async () => {
+  const existingNames = new Set(logoList.value.map(i => i.name))
+  const promises = visibleList.value
+    .filter(item => !existingNames.has(item.学校))
+    .map(item =>
+      GetLogoUrl(item.学校).then(res => ({
+        name: item.学校,
+        url: res.data.issuccess ? res.data.message : null
+      }))
+    )
+  const newResults = await Promise.all(promises)
+  logoList.value = [...logoList.value, ...newResults] 
 }
+
 const onLoad = () => {
     loading.value = true
     setTimeout(async () => {
         const nextLength = visibleList.value.length + chunkSize
-        visibleList.value = fullData.slice(0, nextLength)
-        finished.value = visibleList.value.length >= fullData.length
+        visibleList.value = fullData.value.slice(0, nextLength)
+        finished.value = visibleList.value.length >= fullData.value.length
         await GetLogo();
         loading.value = false
     }, 300)
@@ -80,7 +85,7 @@ const onLoad = () => {
 // 条件切换时重置懒加载
 const resetList = () => {
     visibleList.value = []
-    fullData = []
+    fullData.value = []
     finished.value = false
     getList()
 }
@@ -104,6 +109,30 @@ const onYearConfirm = (val: string) => {
 onMounted(() => {
     getList()
 })
+
+watch(value, async (val) => {
+  if (!val) {
+    getList()
+    return
+  }
+  const numMatch = val.match(/^\d+$/)
+  if (numMatch) {
+    const center = parseInt(val)
+    visibleList.value = fullData.value.filter(item => {
+      const score = parseInt(item.最低分数线)
+      return !isNaN(score) && score >= center - 50 && score <= center + 50
+    })
+  } else {
+    visibleList.value = fullData.value.filter(item =>
+      item.学校.includes(val) ||
+      item.城市.includes(val) ||
+      item.招生类型.includes(val)
+    )
+  }
+  await GetLogo()
+  finished.value = true
+})
+
 </script>
 
 <template>
@@ -119,17 +148,11 @@ onMounted(() => {
                     @click="showYearPicker = true" style="flex: 1" />
             </div>
             <form action="javascript:return true">
-                <van-search v-model="value" placeholder="请输入分数或分段" shape="round" :autofocus="false">
+                <van-search v-model="value" placeholder="请输入筛选内容" shape="round" :autofocus="false">
                     <template #action>
                         <div class="search_Btn">搜索</div>
                     </template>
                 </van-search>
-                <van-tabs v-model:active="active" @click-tab="handleTab">
-                    <van-tab title="学校"></van-tab>
-                    <van-tab title="分段"></van-tab>
-                    <van-tab title="城市"></van-tab>
-                    <van-tab title="专业"></van-tab>
-                </van-tabs>
             </form>
         </van-sticky>
 
