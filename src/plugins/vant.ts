@@ -2,7 +2,7 @@
  *  @author TalkTao
  * @description  按需引入Vant
 */ 
-import { Button, Tabbar, TabbarItem, Sticky, NavBar, Icon, Search, DropdownMenu, DropdownItem, Image, Lazyload, Tabs, Tab, Toast, Field, Cell, CellGroup, Form, List  } from 'vant'
+import { Button, Tabbar, TabbarItem, Sticky, NavBar, Icon, Search, DropdownMenu, DropdownItem, Image, Lazyload, Tabs, Tab, Toast, Field, Cell, CellGroup, Form, List,Popup,Picker,Loading, Tag, Card  } from 'vant'
 const pluginsVant = [
 	Button, 
 	Tabbar,
@@ -22,7 +22,10 @@ const pluginsVant = [
 	Cell,
 	CellGroup,
 	Form,
-	List 
+	List,
+	Popup,
+	Picker,
+	Loading,Tag,Card
 ]
 export const vantPlugins = {
   	install: function(vm) {

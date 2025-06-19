@@ -1,210 +1,231 @@
 <script setup lang="ts">
-import { ref, reactive, toRefs } from 'vue'
+import { ref, reactive, toRefs, onMounted } from 'vue'
 import logo from '@/assets/logo.png'
+import { GetSchool, GetLogoUrl } from '@/api/Major'
 
+const logoList = ref([]);
 // 搜索相关
 const searchState = () => {
     const state = reactive({
-        value: '', // 搜索input框的值
-        isSearch: true, // 是否显示历史搜索
-        goodsList: [], // 根据搜索关键字返回的商品数据
+        value: '',
+        isSearch: true,
+        goodsList: [],
         titleText: '志愿',
-        scrollTop: 0 // 获取滚动高度
+        scrollTop: 0,
     })
     return toRefs(state)
 }
 const { value, isSearch, goodsList, titleText, scrollTop } = searchState()
 
-const active = ref(0) // tab切换默认值
+const active = ref(0)
 
-let testData = [
-    { id: 1, title: '北京大学', price: 999 },
-    { id: 2, title: '清华大学', price: 555 },
-    { id: 3, title: '复旦大学', price: 888 },
-]
-
-// 获取搜索成功的数据
-const getSearchResult = (params) => {
-    console.log(params, 'params');
-    // 接口
-}
-
-// 点击搜索的回调
-const handleSearch = (e) => {
-    getSearchResult(e)
-    console.log(e, 'eeeeeehandleSearch');
-}
-
-// 切换tab分类标签的回调
-const handleTab = (e) => {
-    // getSearchResult({keywords:value.value,searchValue: e.name})
-    // console.log(e,'etabs');
-    switch (e.name) {
-        case 0:
-            testData = testData
-            console.log(testData, '000000000');
-            break;
-        case 1:
-            testData = testData
-            console.log(testData, '111111111');
-            break;
-        case 2:
-            testData = testData.sort((a, b) => a.price - b.price)
-            console.log(testData, '222222222');
-            break;
-        case 3:
-            testData = testData.sort((a, b) => b.price - a.price)
-            console.log(testData, '33333333333');
-            break;
-        default:
-            break;
-    }
-}
-const cityValue = ref('')
-const subjectValue = ref('')
-const yearValue = ref('')
+const cityValue = ref('甘肃')
+const subjectValue = ref('物理类')
+const yearValue = ref('2024')
 
 const showCityPicker = ref(false)
 const showSubjectPicker = ref(false)
 const showYearPicker = ref(false)
 
-const cityColumns = ['北京', '上海', '广州']
-const subjectColumns = ['理科', '文科']
-const yearColumns = ['2023', '2024', '2025']
+const cityColumns = ['甘肃']
+const subjectColumns = ['物理类', '历史类', '理科', '文科']
+const yearColumns = ['2024', '2023', '2022', '2021', '2020']
 
-const onCityConfirm = (val) => {
+// 懒加载核心数据
+const cardData = ref<any[]>([])        // 全部数据
+const visibleList = ref<any[]>([])     // 当前显示数据
+const loading = ref(false)
+const finished = ref(false)
+const chunkSize = 10                   // 每次加载条数
+let fullData: any[] = []               // 全部数据缓存
+const handleTab = () => {
+}
+const getList = async () => {
+    loading.value = true
+    try {
+        const res = await GetSchool(yearValue.value, subjectValue.value)
+        console.log(res.data.message)
+        fullData = res.data.message || []
+        cardData.value = fullData
+        visibleList.value = fullData.slice(0, chunkSize)
+        finished.value = visibleList.value.length >= fullData.length
+        const results: any[] = [];
+        
+        const LogoUrl = await GetLogoUrl();
+        console.log(LogoUrl)
+        logoList.value = LogoUrl.data.issuccess ? LogoUrl.data.message : [];
+    } catch (err) {
+        console.error('获取数据失败', err)
+    } finally {
+        loading.value = false
+    }
+}
+
+const onLoad = () => {
+    loading.value = true
+    setTimeout(() => {
+        const nextLength = visibleList.value.length + chunkSize
+        visibleList.value = fullData.slice(0, nextLength)
+        finished.value = visibleList.value.length >= fullData.length
+        loading.value = false
+    }, 300)
+}
+
+// 条件切换时重置懒加载
+const resetList = () => {
+    visibleList.value = []
+    fullData = []
+    finished.value = false
+    getList()
+}
+
+const onCityConfirm = (val: string) => {
     cityValue.value = val
     showCityPicker.value = false
+    resetList()
 }
-
-const onSubjectConfirm = (val) => {
+const onSubjectConfirm = (val: string) => {
     subjectValue.value = val
     showSubjectPicker.value = false
+    resetList()
 }
-
-const onYearConfirm = (val) => {
+const onYearConfirm = (val: string) => {
     yearValue.value = val
     showYearPicker.value = false
+    resetList()
 }
+
+onMounted(() => {
+    getList()
+})
 </script>
 
 <template>
-  <div class="search d-flex flex-column justify-content-start">
-    <!-- 头部搜索 -->
-    <van-sticky>
-      <CustomHeader title="志愿" leftIcon="arrow-left" leftText="" />
-      <div style="display: flex; gap: 8px;">
-        <van-field v-model="cityValue" is-link readonly label="生源地" placeholder="选择"
-          @click="showCityPicker = true" style="flex: 1" />
-        <van-field v-model="subjectValue" is-link readonly label="科类" placeholder="选择"
-          @click="showSubjectPicker = true" style="flex: 1" />
-        <van-field v-model="yearValue" is-link readonly label="年份" placeholder="选择"
-          @click="showYearPicker = true" style="flex: 1" />
-      </div>
-      <van-tabs v-model:active="active" @click-tab="handleTab">
-        <van-tab title="学校"></van-tab>
-        <van-tab title="分段"></van-tab>
-        <van-tab title="城市"></van-tab>
-        <van-tab title="专业"></van-tab>
-      </van-tabs>
-    </van-sticky>
+    <div class="search d-flex flex-column justify-content-start">
+        <van-sticky>
+            <CustomHeader title="志愿" leftIcon="arrow-left" />
+            <div style="display: flex;">
+                <van-field v-model="cityValue" is-link readonly label="生源地" placeholder="选择"
+                    @click="showCityPicker = true" style="flex: 1" />
+                <van-field v-model="subjectValue" is-link readonly label="科类" placeholder="选择"
+                    @click="showSubjectPicker = true" style="flex: 1" />
+                <van-field v-model="yearValue" is-link readonly label="年份" placeholder="选择"
+                    @click="showYearPicker = true" style="flex: 1" />
+            </div>
+            <form action="javascript:return true">
+                <van-search v-model="value" placeholder="请输入分数或分段" shape="round" :autofocus="false">
+                    <template #action>
+                        <div class="search_Btn">搜索</div>
+                    </template>
+                </van-search>
+                <van-tabs v-model:active="active" @click-tab="handleTab">
+                    <van-tab title="学校"></van-tab>
+                    <van-tab title="分段"></van-tab>
+                    <van-tab title="城市"></van-tab>
+                    <van-tab title="专业"></van-tab>
+                </van-tabs>
+            </form>
+        </van-sticky>
 
-    <!-- 商品列表 -->
-    <div class="card_Box mrn d-flex flex-column justify-content-start">
-      <div v-for="item in testData" :key="item.id">
-        <div class="list_content d-flex justify-content-between align-items-center">
-          <div class="left">
-            <van-image radius="14" width="130" height="120" fit="cover" :src="logo">
-              <template #loading>
-                <van-loading type="spinner" size="20" />
-              </template>
-              <template #error>
-                <van-image />
-              </template>
-            </van-image>
-          </div>
-          <div class="right d-flex flex-column justify-content-around w-100 h-100 ps-4 fs-4">
-            <div>{{ item.title }}</div>
-            <div style="color:green">分数：{{ item.price }}</div>
-            <div>排序：{{ item.id }}</div>
-          </div>
-        </div>
-      </div>
+        <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
+            <div v-for="item in visibleList" :key="item.id" style="padding-bottom: 12px;">
+                <van-card :thumb="logoList.find(i => i.name === item.学校)?.url || logo" thumb-link="#">
+                    <!-- 学校标题 + 城市 -->
+                    <template #title>
+                        <div style="display: flex; flex-direction: column; margin-bottom: 6px;">
+                            <div style="font-size: 18px; font-weight: bold; color: green; margin-bottom: 4px;">
+                                {{ item.学校 }}
+                            </div>
+                            <div
+                                style="font-size: 14px; color: #28a745; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                城市：<span>{{ item.城市 }}</span>
+                                ｜录取批次：
+                                <van-tag type="primary" plain>{{ item.录取批次 }}</van-tag>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- 标签横向铺满 -->
+                    <template #tags>
+                        <div style="">
+                            <van-tag v-if="item.是否211 === '是'" type="primary" plain
+                                style="margin-right: 10px;">211</van-tag>
+                            <van-tag v-if="item.是否985 === '是'" type="warning" plain
+                                style="margin-right: 10px;">985</van-tag>
+                            <van-tag v-if="item.是否双一流 === '是'" type="success" plain
+                                style="margin-right: 10px;">双一流</van-tag>
+                            <span style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;">最低分数线：</span>
+                            <van-tag type="danger" plain style="">{{ item.最低分数线 }}</van-tag>
+
+                        </div>
+                    </template>
+                    <!-- 底部信息 -->
+                    <template #bottom>
+                        <div
+                            style="display: flex; align-items: center; flex-wrap: wrap; font-size: 14px; color: #28a745; margin-top: 2px ; gap: 6px;">
+                            <span> 招生类型：</span>
+                            <van-tag type="warning" plain style="">{{ item.招生类型 }}</van-tag>
+                        </div>
+                        <div style="display: flex; align-items: center; font-size: 14px; color: #28a745; gap: 2px;">
+                            <span>选科要求：</span>
+                            <span style="flex: 1;">{{ item.选科要求 }}</span>
+                        </div>
+                    </template>
+                </van-card>
+            </div>
+        </van-list>
+
+        <van-popup v-model:show="showCityPicker" position="bottom" round>
+            <van-picker :columns="cityColumns" @confirm="onCityConfirm" @cancel="showCityPicker = false" />
+        </van-popup>
+        <van-popup v-model:show="showSubjectPicker" position="bottom" round>
+            <van-picker :columns="subjectColumns" @confirm="onSubjectConfirm" @cancel="showSubjectPicker = false" />
+        </van-popup>
+        <van-popup v-model:show="showYearPicker" position="bottom" round>
+            <van-picker :columns="yearColumns" @confirm="onYearConfirm" @cancel="showYearPicker = false" />
+        </van-popup>
     </div>
-
-    <!-- ✅ 把 Popup 移动到页面最外层 -->
-    <van-popup v-model:show="showCityPicker" position="bottom" round>
-      <van-picker :columns="cityColumns" @confirm="onCityConfirm" @cancel="showCityPicker = false" />
-    </van-popup>
-    <van-popup v-model:show="showSubjectPicker" position="bottom" round>
-      <van-picker :columns="subjectColumns" @confirm="onSubjectConfirm" @cancel="showSubjectPicker = false" />
-    </van-popup>
-    <van-popup v-model:show="showYearPicker" position="bottom" round>
-      <van-picker :columns="yearColumns" @confirm="onYearConfirm" @cancel="showYearPicker = false" />
-    </van-popup>
-  </div>
 </template>
 
-
-
 <style lang="scss" scoped>
+::v-deep(.van-field) {
+    --van-field-label-width: 3.2em;
+    --van-cell-vertical-padding: 5px;
+    --van-cell-horizontal-padding: 5px;
+}
+
+.tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.title {
+    font-size: 16.5px;
+    /* 自定义字体大小 */
+    font-weight: 500;
+    /* 可选：加粗标题 */
+    color: green
+        /* 可选：自定义颜色 */
+}
+
 .search {
     overflow: hidden;
-
-    .search_Box {
-        padding: 4px 10px;
-        position: relative;
-        display: flex;
-        background-color: white;
-
-        >div:nth-child(1) {
-            width: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #5f656b;
-            font-size: 20px;
-        }
-
-        >div:nth-child(2) {
-            width: calc(100% - 8vw);
-
-            .search_Btn {
-                color: #b91c3b;
-            }
-        }
-    }
 
     .mrn {
         width: 100vw;
         height: 100vh;
 
-        >div:nth-child(1) {
-            margin-top: 10px;
-        }
-
         .list_content {
             height: 32vw;
-            /* background-color: #f5f5f5; */
             border-radius: 10px;
             margin: 5px;
             padding: 0 10px;
 
-            .left {}
-
-            .right {
+            .right>div {
                 overflow: hidden;
-
-                >div {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .price {
-                    color: red;
-                }
-
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     }

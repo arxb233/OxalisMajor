@@ -32,7 +32,7 @@ const useTabBar = () => {
           name: "About",
         },
         icon: "gift-o",
-      },
+      }
     ],
   });
   return toRefs(state);

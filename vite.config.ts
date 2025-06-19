@@ -33,7 +33,7 @@ export default defineConfig(({ command, mode }) => {
 			host: '0.0.0.0',
 			proxy: {
 				'/api': {
-					target: 'https://api.inews.qq.com',
+					target: 'http://127.0.0.1:5162',
 					changeOrigin: true,
 					rewrite: (path) => path.replace(/^\/api/, '') // 将匹配到的api替换成''
 				}
