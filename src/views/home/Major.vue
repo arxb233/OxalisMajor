@@ -49,24 +49,30 @@ const getList = async () => {
         cardData.value = fullData
         visibleList.value = fullData.slice(0, chunkSize)
         finished.value = visibleList.value.length >= fullData.length
-        const results: any[] = [];
-        
-        const LogoUrl = await GetLogoUrl();
-        console.log(LogoUrl)
-        logoList.value = LogoUrl.data.issuccess ? LogoUrl.data.message : [];
+        await GetLogo();
     } catch (err) {
         console.error('获取数据失败', err)
     } finally {
         loading.value = false
     }
 }
-
+const GetLogo = async() => {
+    const promises = visibleList.value.map(item =>
+        GetLogoUrl(item.学校).then(res => ({
+            name: item.学校,
+            url: res.data.issuccess ? res.data.message : null
+        }))
+    );
+    const results = await Promise.all(promises);
+    logoList.value = results;
+}
 const onLoad = () => {
     loading.value = true
-    setTimeout(() => {
+    setTimeout(async () => {
         const nextLength = visibleList.value.length + chunkSize
         visibleList.value = fullData.slice(0, nextLength)
         finished.value = visibleList.value.length >= fullData.length
+        await GetLogo();
         loading.value = false
     }, 300)
 }
