@@ -8,6 +8,10 @@ export const GetPlan = (year: string , subject: string) => {
     return Serveraxios.get(`Major/GetPlan?year=${year}&subject=${subject}`)
 }
 
+export const GetSubject = (year: string , subject: string) => {
+    return Serveraxios.get(`Major/GetSubject?year=${year}&subject=${subject}`)
+}
+
 export const GetLogoUrl = (name: string) => {
     return Serveraxios.get('Major/GetLogoUrl?name='+ name )
 }
