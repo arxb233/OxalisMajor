@@ -24,14 +24,28 @@ const useTabBar = () => {
         to: {
           name: "Plan",
         },
-        icon: "label-o",
+        icon: "star-o",
       },
       {
-        title: "关于",
+        title: "专业",
         to: {
-          name: "About",
+          name: "Subject",
         },
-        icon: "gift-o",
+        icon: "friends-o",
+      },
+      {
+        title: "分段",
+        to: {
+          name: "Rank",
+        },
+        icon: "cluster-o",
+      },
+      {
+        title: "个人报告",
+        to: {
+          name: "Report",
+        },
+        icon: "label-o",
       }
     ],
   });
