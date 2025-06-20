@@ -166,13 +166,13 @@ watch(value, async (val) => {
                     <!-- 标签横向铺满 -->
                     <template #tags>
                         <div style="margin-top: 5px;">
-                            <span style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;">招生计划：</span>
+                            <span style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;">分数：</span>
                             <van-tag type="danger" plain style="">{{ item.分数 }}</van-tag>
                             <span
-                                style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;margin-left: 10px;margin-right: 8px;">学制:</span>
+                                style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;margin-left: 10px;margin-right: 8px;">人数:</span>
                             <van-tag type="danger" plain style="">{{ item.人数 }}</van-tag>
                              <span
-                                style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;margin-left: 10px;margin-right: 8px;">学费:</span>
+                                style="font-size: 14px; color: #28a745; margin: 6px 0; gap: 6px;margin-left: 10px;margin-right: 8px;">排名区间:</span>
                             <van-tag type="danger" plain style="">{{ item.排名区间 }}</van-tag>
                         </div>
                     </template>
