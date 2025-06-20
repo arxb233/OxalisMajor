@@ -4,6 +4,10 @@ export const GetSchool = (year: string , subject: string,is985:string,pici :stri
     return Serveraxios.get(`Major/School?year=${year}&subject=${subject}&is985=${is985}&pici=${pici}&province=${province}&prefecture=${prefecture}&county=${county}`)
 }
 
+export const GetPlan = (year: string , subject: string) => {
+    return Serveraxios.get(`Major/GetPlan?year=${year}&subject=${subject}`)
+}
+
 export const GetLogoUrl = (name: string) => {
     return Serveraxios.get('Major/GetLogoUrl?name='+ name )
 }
